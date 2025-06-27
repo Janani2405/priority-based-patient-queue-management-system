@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Status</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+    
+            body {
+                background: url("{{ url_for('static', filename='images/queue-status.jpg') }}") no-repeat center center fixed;
+                background-size: cover;
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                color: #333;
+            }
+          
+
+        /* 🔹 Ensure row highlight works */
+
+        .highlight-patient {
+            background-color: yellow !important; /* ✅ Ensures it overrides other styles */
+            font-weight: bold;
+        }
+
+        /* 🔹 Highlight Patient Name */
+        .highlight-name {
+            color: red !important;
+            font-weight: bold;
+        }
+        nav {
+            background: rgba(19, 132, 150, 0.95);
+            padding: 15px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 30px;
+        }
+
+        nav ul li a {
+            margin-top: 5%;
+            margin-bottom: 5%;
+            color: white;
+            text-decoration: none;
+            font-size: 23px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div >
+  <nav>
+    <ul>
+      <li><a href="{{ url_for('home') }}">Home</a></li>
+      <li><a href="{{ url_for('triage') }}">Appointment</a></li>
+      <li><a href="{{ url_for('emergency') }}">Emergency</a></li>
+     
+      
+      {% if username %}
+        {% if role == 'Doctor' %}
+          <li><a href="{{ url_for('doctor_dashboard') }}">Dashboard</a></li>
+        {% elif role == 'Admin' %}
+          <li><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+        {% endif %}
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+      {% else %}
+        <li><a href="{{ url_for('login') }}">Login</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+ </div>
+    <div class="container">
+        <h2>Doctor Appointment Queue</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+
+        <p>Check your appointment details below.</p>
+
+        <table>
+            <tr>
+                <th>Patient Name</th>
+                <th>Doctor Name</th> <!-- ✅ Fixed -->
+                <th>Specialization</th> <!-- ✅ Fixed -->
+                <th>Appointment Date & Time</th>
+                <th>Triage Level</th>
+                <th>Waiting Time</th>
+
+            </tr>
+
+            {% for queue_patient in queue_data %}
+                <tr class="{% if patient_details and queue_patient[0] == patient_details[0] %}highlight-patient{% endif %}">
+                    <td class="{% if patient_details and queue_patient[0] == patient_details[0] %}highlight-name{% endif %}">
+                        {{ queue_patient[1] }}
+                    </td>
+                    <td>{{ queue_patient[3] if queue_patient[3] else "Not Assigned" }}</td>
+                    <td>{{ queue_patient[2] }}</td>
+                    <td>{{ queue_patient[4] }} {{ queue_patient[5] if queue_patient[5] else 'Not Assigned' }}</td>
+                    <td class="triage-{{ queue_patient[6].lower() }}">{{ queue_patient[6] }}</td>
+                    <td>{{ queue_patient[7] }}</td> 
+                </tr>
+            {% endfor %}
+
+        </table>
+
+        <a href="{{ url_for('home') }}" class="btn btn-primary">Back to Home</a>
+
+    </div>
+
+</body>
+</html>
